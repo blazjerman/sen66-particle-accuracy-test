@@ -1,26 +1,24 @@
 # SEN66 Particle Accuracy Test
 
-This project is used to test the particle measurement accuracy of multiple Sensirion SEN66 sensors at the same time.
+This project tests the particle measurement accuracy of up to four Sensirion SEN66 sensors at the same time.
 
-The test setup uses a custom ESP32-based sensor PCB with four I2C sensor connections. The goal is to compare the readings from up to four SEN66 sensors against a calibrated reference particle measurement device placed in the same test box.
+The sensors are connected to an ESP32-based sensor PCB with four I2C connections. The SEN66 readings will be compared with a calibrated reference particle measurement device inside the same test box.
 
-This repository is meant as a handover and explanation document for the student who will continue the project. Coding will be done in the Arduino IDE.
+Coding for this project will be done in the Arduino IDE.
 
 ---
 
-## Project Goal
+## Test Goal
 
-The goal of this project is to check how accurate the SEN66 sensors are when measuring particulate matter.
+The goal is to compare the particle measurements from the SEN66 sensors with a calibrated reference device.
 
-The test compares:
+The test will compare:
 
-- SEN66 sensor 1
-- SEN66 sensor 2
-- SEN66 sensor 3
-- SEN66 sensor 4
-- One calibrated reference particle measurement device
-
-All sensors and the reference device will be placed inside the same closed test box so they measure the same air conditions.
+- SEN66 sensor on I2C channel 0
+- SEN66 sensor on I2C channel 1
+- SEN66 sensor on I2C channel 2
+- SEN66 sensor on I2C channel 3
+- Calibrated reference particle measurement device
 
 ---
 
@@ -28,94 +26,139 @@ All sensors and the reference device will be placed inside the same closed test 
 
 The test will be done inside a box.
 
-Inside the box there will be:
+Inside the box:
 
 - Up to four SEN66 sensors
-- One calibrated and highly accurate reference particle measurement device
-- A ventilator / fan to move air through the box
-- The ESP32-based sensor PCB
-- Cables from the PCB to the sensors
+- One calibrated reference particle measurement device
+- A ventilator / fan to mix the air
+- ESP32-based sensor PCB
+- Sensor cables
 
-The calibrated reference device is used as the trusted measurement. The SEN66 readings will be compared to this reference.
+The reference device is the trusted measurement. SEN66 data will be compared to it.
 
 ---
 
-## Hardware Used
+## Hardware
 
-### Main Control Board
-
-The project uses this ESP32-based sensor PCB:
+Main board:
 
 https://github.com/blazjerman/ESP32-Based-Sensor-PCB
 
-Important board features used in this project:
+Important board information:
 
 - ESP32 microcontroller
-- I2C multiplexer: TCA9548APWR
+- I2C multiplexer: `TCA9548APWR`
 - I2C multiplexer address: `0x70`
 - ESP32 I2C SDA pin: `IO21`
 - ESP32 I2C SCL pin: `IO22`
-- Four I2C output channels:
+- Four I2C sensor channels:
   - Channel 0: `SD0 / SC0`
   - Channel 1: `SD1 / SC1`
   - Channel 2: `SD2 / SC2`
   - Channel 3: `SD3 / SC3`
-- RGB status LEDs for easier debugging
-
-### Sensors
-
-The tested sensors are Sensirion SEN66 sensors.
-
-The reason an I2C multiplexer is needed is that multiple identical I2C sensors usually have the same I2C address. If they are connected to the same I2C bus directly, the ESP32 cannot know which one it is talking to.
-
-The multiplexer solves this problem by connecting only one sensor channel at a time.
+- RGB LEDs for easier debugging
 
 ---
 
-## RGB Status LEDs
+## Arduino IDE Setup
 
-The PCB also includes RGB LEDs that can be used for easier debugging.
+### 1. Install Arduino IDE
 
-These LEDs are useful because they can show the current state of the program without needing to constantly look at the Serial Monitor.
+Download Arduino IDE:
 
-For example, the RGB LEDs can be used to show:
-
-- Program started successfully
-- I2C multiplexer was found
-- SEN66 sensor was detected
-- Sensor reading was successful
-- Sensor reading failed
-- Test is currently running
-- Error state
-
-An example for controlling the RGB LEDs is included in the board repository in the `led_example` folder.
-
-Use this example first to understand how the RGB LEDs are connected and how they can be controlled from the Arduino IDE.
-
-Suggested debug colors:
-
-| LED Color | Meaning |
-|---|---|
-| Green | Sensor read successful |
-| Red | Sensor read failed or sensor not found |
-| Blue | I2C multiplexer channel selected |
-| Yellow | Test is running |
-| Purple | Setup / initialization |
-| Off | Idle or finished |
-
-The exact colors can be changed in the code. The important thing is to use the LEDs to make debugging easier while testing multiple SEN66 sensors inside the box.
+https://www.arduino.cc/en/software
 
 ---
 
-## I2C Explanation
+### 2. Install ESP32 Board Support
 
-I2C uses two signal wires:
+Arduino IDE needs ESP32 board support.
 
-- `SDA` - data line
-- `SCL` - clock line
+In Arduino IDE:
 
-On this ESP32 board:
+1. Open `File > Preferences`
+2. Find **Additional boards manager URLs**
+3. Add this URL:
+
+```text
+https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
+```
+
+Then:
+
+1. Open `Tools > Board > Boards Manager`
+2. Search for `esp32`
+3. Install **esp32 by Espressif Systems**
+
+After that, select the ESP32 board under:
+
+```text
+Tools > Board
+```
+
+If unsure, try:
+
+```text
+ESP32 Dev Module
+```
+
+Also select the correct USB port under:
+
+```text
+Tools > Port
+```
+
+---
+
+### 3. Install SEN66 Library
+
+The SEN66 sensor needs the official Sensirion Arduino library:
+
+https://github.com/Sensirion/arduino-i2c-sen66
+
+It can also be installed directly from Arduino IDE:
+
+1. Open `Sketch > Include Library > Manage Libraries`
+2. Search for `Sensirion I2C SEN66`
+3. Install the library
+4. Install any dependencies if Arduino IDE asks
+
+Example code should then appear under:
+
+```text
+File > Examples > Sensirion I2C SEN66
+```
+
+---
+
+## I2C and Multiplexer
+
+I2C uses two wires:
+
+- `SDA` - data
+- `SCL` - clock
+
+On this board:
 
 ```cpp
 #define I2C_SDA 21
 #define I2C_SCL 22
+```
+
+The four SEN66 sensors are connected through the I2C multiplexer. This is needed because identical sensors usually have the same I2C address.
+
+Before reading a sensor, select the correct multiplexer channel.
+
+## RGB LEDs
+
+The PCB has RGB LEDs that can be used for simple debugging.
+
+An example is available in the board repository in the `led_example` folder.
+
+Use it first to test the RGB LEDs.
+
+- Arduino IDE
+- ESP32 board support in Arduino IDE
+- Sensirion SEN66 Arduino library
+
+---
