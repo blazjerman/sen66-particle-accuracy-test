@@ -36,8 +36,6 @@ Inside the box there will be:
 - The ESP32-based sensor PCB
 - Cables from the PCB to the sensors
 
-The ventilator is important because it helps mix the air inside the box. This makes sure all sensors are exposed to similar air conditions.
-
 The calibrated reference device is used as the trusted measurement. The SEN66 readings will be compared to this reference.
 
 ---
