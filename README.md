@@ -149,6 +149,34 @@ The four SEN66 sensors are connected through the I2C multiplexer. This is needed
 
 Before reading a sensor, select the correct multiplexer channel.
 
+## SEN66 wiring to the ESP board
+
+Each SEN66 sensor uses four wires:
+
+- `Red` → `3.3V`
+- `Brown` → `GND`
+- `Yellow` → `SDn`
+- `Black` → `SCn`
+
+The `Red` and `Brown` wires are shared the same way for all sensors:
+
+- all `Red` wires go to `3.3V`
+- all `Brown` wires go to `GND`
+
+The `Yellow` and `Black` wires are sensor-specific and connect to the corresponding multiplexer channel:
+
+| Sensor | Yellow wire | Black wire |
+|---|---|---|
+| SEN66 #1 | `SD0` | `SC0` |
+| SEN66 #2 | `SD1` | `SC1` |
+| SEN66 #3 | `SD2` | `SC2` |
+| SEN66 #4 | `SD3` | `SC3` |
+
+So for sensor `n`, connect:
+
+- `Yellow` → `SDn`
+- `Black` → `SCn`
+
 ## RGB LEDs
 
 The PCB has RGB LEDs that can be used for simple debugging.
